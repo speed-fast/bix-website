@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Panel — BIX TECH</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Syne:wght@400;600;800&family=JetBrains+Mono:wght@300;400;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root{
+      --black:#080808;--obsidian:#0d0d0d;--surface:#141414;--surface2:#1c1c1c;
+      --border:#282828;--gold:#d4a017;--gold-bright:#f5c842;--gold-dim:#8a6810;
+      --text:#e8e8e8;--text-dim:#888;--text-muted:#555;
+      --good:#22c55e;--bad:#ef4444;--warn:#f59e0b;
+      --radius:8px;--radius-lg:16px;
+      --font-display:'Orbitron',monospace;--font-body:'Syne',sans-serif;--font-mono:'JetBrains Mono',monospace;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{background:var(--black);color:var(--text);font-family:var(--font-body);display:flex;min-height:100vh}
+
+    /* ── SIDEBAR ── */
+    .sidebar{width:240px;min-width:240px;background:var(--obsidian);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:28px 0;position:fixed;top:0;left:0;height:100vh;z-index:100;transition:transform 0.3s}
+    .sidebar-logo{padding:0 24px 24px;border-bottom:1px solid var(--border);margin-bottom:20px}
+    .logo-bix{font-family:var(--font-display);font-size:1.2rem;font-weight:900;color:var(--gold)}
+    .logo-tech{font-family:var(--font-display);font-size:1.2rem;color:var(--text)}
+    .logo-sub{font-family:var(--font-mono);font-size:0.55rem;color:var(--bad);letter-spacing:0.15em;margin-top:2px}
+    .admin-badge{display:inline-block;background:rgba(239,68,68,0.1);border:1px solid var(--bad);color:var(--bad);font-family:var(--font-mono);font-size:0.55rem;letter-spacing:0.15em;padding:2px 8px;border-radius:4px;margin-top:6px}
+    .nav-section{padding:0 16px;margin-bottom:8px}
+    .nav-section-label{font-family:var(--font-mono);font-size:0.6rem;color:var(--text-muted);letter-spacing:0.15em;padding:0 8px;margin-bottom:6px}
+    .nav-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:var(--radius);color:var(--text-dim);font-size:0.87rem;cursor:pointer;transition:all 0.2s;border:none;background:none;width:100%;text-align:left;text-decoration:none}
+    .nav-item:hover{background:var(--surface);color:var(--text)}
+    .nav-item.active{background:rgba(212,160,23,0.1);color:var(--gold);border-left:2px solid var(--gold)}
+    .nav-icon{font-size:1.1rem;width:22px;text-align:center}
+    .nav-badge-red{margin-left:auto;background:var(--bad);color:white;font-family:var(--font-mono);font-size:0.58rem;padding:2px 7px;border-radius:10px;font-weight:700}
+    .sidebar-bottom{margin-top:auto;padding:16px;border-top:1px solid var(--border)}
+    .admin-card{background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:var(--radius);padding:12px}
+    .admin-card-name{font-size:0.85rem;font-weight:600;margin-bottom:2px}
+    .admin-card-role{font-family:var(--font-mono);font-size:0.6rem;color:var(--bad);letter-spacing:0.1em}
+
+    /* ── MAIN ── */
+    .main{margin-left:240px;flex:1;display:flex;flex-direction:column;min-height:100vh}
+    .topbar{background:rgba(8,8,8,0.9);border-bottom:1px solid var(--border);padding:0 32px;height:64px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:50;backdrop-filter:blur(12px)}
+    .topbar-title{font-family:var(--font-display);font-size:0.9rem;letter-spacing:0.08em}
+    .topbar-right{margin-left:auto;display:flex;align-items:center;gap:12px}
+    .fraud-alert-bar{background:rgba(239,68,68,0.1);border-bottom:1px solid var(--bad);padding:10px 32px;display:flex;align-items:center;gap:12px;font-family:var(--font-mono);font-size:0.78rem;color:#fca5a5}
+    .fraud-alert-bar.hidden{display:none}
+
+    .page-content{padding:32px;flex:1}
+    .panel{display:none}
+    .panel.active{display:block}
+
+    /* ── STATS ── */
+    .stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:28px}
+    .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px;position:relative;overflow:hidden;transition:border-color 0.2s}
+    .stat-card:hover{border-color:rgba(212,160,23,0.3)}
+    .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--gold),var(--gold-bright))}
+    .stat-label{font-family:var(--font-mono);font-size:0.6rem;color:var(--text-muted);letter-spacing:0.1em;margin-bottom:6px}
+    .stat-value{font-family:var(--font-display);font-size:1.6rem;font-weight:900;margin-bottom:2px}
+    .stat-sub{font-size:0.72rem;color:var(--text-dim)}
+    .stat-icon{position:absolute;top:18px;right:14px;font-size:1.6rem;opacity:0.12}
+
+    /* ── SECTION TITLE ── */
+    .section-title{font-family:var(--font-display);font-size:0.85rem;letter-spacing:0.08em;margin-bottom:16px;display:flex;align-items:center;gap:10px;color:var(--gold)}
+    .stl{flex:1;height:1px;background:var(--border)}
+
+    /* ── TABLE ── */
+    .table-wrap{overflow-x:auto;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg)}
+    .data-table{width:100%;border-collapse:collapse;font-size:0.83rem}
+    .data-table th{font-family:var(--font-mono);font-size:0.62rem;letter-spacing:0.1em;color:var(--text-muted);padding:12px 16px;text-align:left;border-bottom:1px solid var(--border);background:var(--surface2)}
+    .data-table td{padding:12px 16px;border-bottom:1px solid var(--border)}
+    .data-table tr:last-child td{border-bottom:none}
+    .data-table tr:hover td{background:rgba(255,255,255,0.02)}
+    .status-pill{font-family:var(--font-mono);font-size:0.62rem;padding:3px 10px;border-radius:10px;font-weight:700}
+    .status-active{background:rgba(34,197,94,0.1);color:var(--good);border:1px solid rgba(34,197,94,0.2)}
+    .status-frozen{background:rgba(239,68,68,0.1);color:var(--bad);border:1px solid rgba(239,68,68,0.2)}
+    .status-flagged{background:rgba(245,158,11,0.1);color:var(--warn);border:1px solid rgba(245,158,11,0.2)}
+    .status-pending{background:rgba(212,160,23,0.1);color:var(--gold);border:1px solid rgba(212,160,23,0.2)}
+    .status-success{background:rgba(34,197,94,0.1);color:var(--good);border:1px solid rgba(34,197,94,0.2)}
+
+    /* ── BUTTONS ── */
+    .btn-gold{background:linear-gradient(135deg,var(--gold),var(--gold-bright));color:var(--black);border:none;padding:9px 20px;border-radius:var(--radius);font-family:var(--font-display);font-size:0.72rem;font-weight:700;letter-spacing:0.06em;cursor:pointer;transition:all 0.2s}
+    .btn-gold:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(212,160,23,0.35)}
+    .btn-ghost{background:transparent;color:var(--text-dim);border:1px solid var(--border);padding:9px 20px;border-radius:var(--radius);font-family:var(--font-display);font-size:0.72rem;cursor:pointer;transition:all 0.2s}
+    .btn-ghost:hover{border-color:var(--gold);color:var(--gold)}
+    .btn-danger{background:rgba(239,68,68,0.1);color:var(--bad);border:1px solid rgba(239,68,68,0.3);padding:7px 14px;border-radius:var(--radius);font-family:var(--font-mono);font-size:0.65rem;cursor:pointer;transition:all 0.2s}
+    .btn-danger:hover{background:rgba(239,68,68,0.2)}
+    .btn-sm{padding:5px 12px;font-size:0.65rem}
+    .btn-warn{background:rgba(245,158,11,0.1);color:var(--warn);border:1px solid rgba(245,158,11,0.3);padding:5px 12px;border-radius:var(--radius);font-family:var(--font-mono);font-size:0.65rem;cursor:pointer;transition:all 0.2s}
+    .btn-warn:hover{background:rgba(245,158,11,0.2)}
+
+    /* ── UPLOAD ── */
+    .upload-zone{border:2px dashed var(--border);border-radius:var(--radius-lg);padding:36px;text-align:center;transition:all 0.2s;cursor:pointer;background:var(--surface)}
+    .upload-zone:hover,.upload-zone.drag-over{border-color:var(--gold);background:rgba(212,160,23,0.03)}
+    .upload-icon-big{font-size:2.5rem;margin-bottom:8px}
+    .upload-zone p{color:var(--text-muted);font-size:0.83rem;margin:4px 0}
+    .upload-link{color:var(--gold);cursor:pointer;text-decoration:underline}
+    .form-group{margin-bottom:14px}
+    .form-label{display:block;font-family:var(--font-mono);font-size:0.63rem;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:5px}
+    .form-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);padding:10px 12px;font-family:var(--font-body);font-size:0.87rem;outline:none;transition:border-color 0.2s;resize:vertical}
+    .form-input:focus{border-color:var(--gold)}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .toggle-row{display:flex;align-items:center;gap:12px;margin-bottom:14px;font-family:var(--font-mono);font-size:0.78rem;color:var(--text-dim)}
+    .toggle{position:relative;display:inline-block;width:42px;height:22px}
+    .toggle input{opacity:0;width:0;height:0}
+    .toggle-slider{position:absolute;inset:0;background:var(--border);border-radius:11px;cursor:pointer;transition:0.3s}
+    .toggle-slider::before{content:'';position:absolute;width:16px;height:16px;left:3px;top:3px;background:white;border-radius:50%;transition:0.3s}
+    input:checked+.toggle-slider{background:var(--gold)}
+    input:checked+.toggle-slider::before{transform:translateX(20px)}
+    .toggle-status{font-weight:700}
+    .upload-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px}
+
+    /* ── FILE CARDS ── */
+    .files-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-bottom:24px}
+    .file-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;transition:border-color 0.2s}
+    .file-card:hover{border-color:rgba(212,160,23,0.3)}
+    .file-thumb{height:120px;background:linear-gradient(135deg,#0a0a0a,#181818);display:flex;align-items:center;justify-content:center;font-size:2.5rem;position:relative;opacity:0.7}
+    .file-drm-tag{position:absolute;top:8px;left:8px;font-family:var(--font-mono);font-size:0.58rem;color:var(--gold);background:rgba(8,8,8,0.85);border:1px solid var(--gold-dim);padding:2px 7px;border-radius:4px;letter-spacing:0.1em}
+    .file-unprotected-tag{position:absolute;top:8px;left:8px;font-family:var(--font-mono);font-size:0.58rem;color:var(--warn);background:rgba(8,8,8,0.85);border:1px solid rgba(245,158,11,0.3);padding:2px 7px;border-radius:4px;letter-spacing:0.1em}
+    .file-body{padding:14px}
+    .file-title{font-family:var(--font-display);font-size:0.78rem;letter-spacing:0.04em;margin-bottom:6px}
+    .file-meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+    .file-price{font-family:var(--font-display);color:var(--gold);font-size:0.9rem}
+    .file-type-tag{font-family:var(--font-mono);font-size:0.6rem;color:var(--text-muted);background:var(--surface2);padding:2px 7px;border-radius:4px}
+    .file-actions{display:flex;gap:6px}
+
+    /* ── REVENUE CHART ── */
+    .chart-bar-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;margin-bottom:24px}
+    .chart-bars{display:flex;align-items:flex-end;gap:8px;height:140px;margin-top:16px}
+    .chart-bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px}
+    .chart-bar{width:100%;background:linear-gradient(180deg,var(--gold),var(--gold-dim));border-radius:4px 4px 0 0;min-height:4px;transition:all 0.5s}
+    .chart-bar-label{font-family:var(--font-mono);font-size:0.6rem;color:var(--text-muted)}
+    .chart-bar-val{font-family:var(--font-mono);font-size:0.6rem;color:var(--gold)}
+
+    /* ── MINI CARDS ── */
+    .mini-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px}
+    .mini-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px}
+    .mini-card-title{font-family:var(--font-mono);font-size:0.62rem;color:var(--text-muted);margin-bottom:8px;letter-spacing:0.1em}
+    .mini-card-body{font-size:0.85rem;line-height:1.6}
+
+    /* ── MODAL ── */
+    .modal-overlay{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.85);backdrop-filter:blur(10px);display:none;align-items:center;justify-content:center;padding:24px}
+    .modal-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);width:100%;max-width:500px;padding:32px;position:relative;animation:slideUp 0.3s ease;max-height:90vh;overflow-y:auto}
+    @keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+    .modal-close{position:absolute;top:14px;right:14px;background:none;border:1px solid var(--border);color:var(--text-dim);width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:0.8rem}
+    .modal-close:hover{border-color:var(--gold);color:var(--gold)}
+    .modal-title{font-family:var(--font-display);font-size:1rem;letter-spacing:0.08em;margin-bottom:20px}
+
+    /* ── TOAST ── */
+    .toast{position:fixed;bottom:24px;right:24px;z-index:980;padding:12px 20px;border-radius:var(--radius);font-family:var(--font-mono);font-size:0.78rem;transform:translateY(80px);opacity:0;transition:all 0.35s cubic-bezier(0.34,1.56,0.64,1);pointer-events:none}
+    .toast.show{transform:translateY(0);opacity:1}
+    .toast.good{background:var(--good);color:#000}
+    .toast.bad{background:var(--bad);color:#fff}
+    .toast.info{background:var(--gold);color:var(--black)}
+
+    /* ── HAMBURGER ── */
+    .hamburger{display:none;background:none;border:none;cursor:pointer;flex-direction:column;gap:5px;padding:4px}
+    .hamburger span{display:block;width:22px;height:2px;background:var(--text)}
+    .sidebar-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99;display:none}
+    .sidebar-overlay.show{display:block}
+
+    @media(max-width:1100px){.stats-row{grid-template-columns:repeat(3,1fr)}}
+    @media(max-width:900px){
+      .sidebar{transform:translateX(-100%)}.sidebar.open{transform:translateX(0)}
+      .main{margin-left:0}.hamburger{display:flex}
+      .stats-row{grid-template-columns:1fr 1fr}.upload-grid{grid-template-columns:1fr}
+      .mini-cards{grid-template-columns:1fr 1fr}
+    }
+    @media(max-width:600px){
+      .stats-row{grid-template-columns:1fr 1fr}.form-row{grid-template-columns:1fr}
+      .page-content{padding:20px 16px}.topbar{padding:0 16px}.mini-cards{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<!-- ═══ SIDEBAR ═══ -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div><span class="logo-bix">BIX</span><span class="logo-tech">TECH</span></div>
+    <div class="logo-sub">ADMIN CONSOLE</div>
+    <div class="admin-badge">ADMINISTRATOR</div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">DASHBOARD</div>
+    <button class="nav-item active" onclick="showPanel('overview',this)"><span class="nav-icon">📊</span> Overview</button>
+    <button class="nav-item" onclick="showPanel('revenue',this)"><span class="nav-icon">💰</span> Revenue</button>
+  </div>
+
+  <div class="nav-section" style="margin-top:8px">
+    <div class="nav-section-label">CONTENT</div>
+    <button class="nav-item" onclick="showPanel('upload',this)"><span class="nav-icon">⬆️</span> Upload File</button>
+    <button class="nav-item" onclick="showPanel('files',this)"><span class="nav-icon">📁</span> Manage Files</button>
+  </div>
+
+  <div class="nav-section" style="margin-top:8px">
+    <div class="nav-section-label">USERS & SECURITY</div>
+    <button class="nav-item" onclick="showPanel('users',this)"><span class="nav-icon">👥</span> Users</button>
+    <button class="nav-item" onclick="showPanel('fraud',this)">
+      <span class="nav-icon">🚨</span> Fraud Alerts
+      <span class="nav-badge-red" id="fraudCount">1</span>
+    </button>
+    <button class="nav-item" onclick="showPanel('transactions',this)"><span class="nav-icon">📋</span> Transactions</button>
+  </div>
+
+  <div class="nav-section" style="margin-top:8px">
+    <div class="nav-section-label">SETTINGS</div>
+    <button class="nav-item" onclick="showPanel('settings',this)"><span class="nav-icon">⚙️</span> Settings</button>
+  </div>
+
+  <div class="sidebar-bottom">
+    <div class="admin-card">
+      <div class="admin-card-name">Super Admin</div>
+      <div class="admin-card-role">BIX TECH OWNER</div>
+    </div>
+    <a href="index.html" style="display:flex;align-items:center;gap:10px;padding:10px 12px;color:var(--text-muted);font-size:0.82rem;text-decoration:none;margin-top:8px;border-radius:var(--radius);transition:all 0.2s" onmouseover="this.style.color='var(--bad)'" onmouseout="this.style.color='var(--text-muted)'">
+      <span>🚪</span> Back to Site
+    </a>
+  </div>
+</aside>
+
+<!-- ═══ MAIN ═══ -->
+<div class="main">
+  <div class="topbar">
+    <button class="hamburger" onclick="toggleSidebar()"><span></span><span></span><span></span></button>
+    <span class="topbar-title" id="topbarTitle">OVERVIEW</span>
+    <div class="topbar-right">
+      <button class="btn-gold btn-sm" onclick="showPanel('upload',null)">+ Upload File</button>
+    </div>
+  </div>
+
+  <!-- Fraud Alert Bar -->
+  <div class="fraud-alert-bar" id="fraudAlertBar">
+    🚨 <strong>FRAUD ALERT:</strong>&nbsp; User "Fatima Bello" (USR002) has made 2 screenshot attempts on protected content.
+    <button class="btn-danger btn-sm" style="margin-left:auto" onclick="freezeFromAlert('USR002')">Freeze Account</button>
+    <button style="background:none;border:none;color:var(--text-muted);cursor:pointer;margin-left:8px;font-size:1rem" onclick="dismissAlert()">✕</button>
+  </div>
+
+  <div class="page-content">
+
+    <!-- ══ OVERVIEW ══ -->
+    <div class="panel active" id="panel-overview">
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-label">TOTAL REVENUE</div>
+          <div class="stat-value" style="color:var(--gold)">48,250</div>
+          <div class="stat-sub">XAF this month</div>
+          <div class="stat-icon">💰</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">TOTAL USERS</div>
+          <div class="stat-value">4</div>
+          <div class="stat-sub">+1 this week</div>
+          <div class="stat-icon">👥</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">CONTENT FILES</div>
+          <div class="stat-value" id="fileCountStat">8</div>
+          <div class="stat-sub">Active in store</div>
+          <div class="stat-icon">📁</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">TRANSACTIONS</div>
+          <div class="stat-value">12</div>
+          <div class="stat-sub">This month</div>
+          <div class="stat-icon">📋</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">FRAUD ALERTS</div>
+          <div class="stat-value" id="fraudAlertStat" style="color:var(--warn)">1</div>
+          <div class="stat-sub">Needs attention</div>
+          <div class="stat-icon">🚨</div>
+        </div>
+      </div>
+
+      <!-- Revenue Chart -->
+      <div class="chart-bar-wrap">
+        <div class="section-title">REVENUE THIS WEEK <div class="stl"></div></div>
+        <div class="chart-bars" id="chartBars"></div>
+      </div>
+
+      <div class="mini-cards">
+        <div class="mini-card">
+          <div class="mini-card-title">TOP SELLER</div>
+          <div class="mini-card-body">
+            <strong>Complete Forex Masterclass</strong><br/>
+            <span style="color:var(--gold);font-family:var(--font-mono);font-size:0.8rem">1,500 XAF · 6 sales</span>
+          </div>
+        </div>
+        <div class="mini-card">
+          <div class="mini-card-title">MERCHANT ID</div>
+          <div class="mini-card-body" style="font-family:var(--font-mono);font-size:0.9rem;color:var(--gold)">682613312</div>
+        </div>
+        <div class="mini-card">
+          <div class="mini-card-title">DRM STATUS</div>
+          <div class="mini-card-body" style="color:var(--good)">✅ All systems operational<br/><span style="color:var(--text-muted);font-size:0.78rem">Widevine · EME · Canvas</span></div>
+        </div>
+      </div>
+
+      <div class="section-title">RECENT TRANSACTIONS <div class="stl"></div></div>
+      <div class="table-wrap">
+        <table class="data-table" id="recentTxnTable"></table>
+      </div>
+    </div>
+
+    <!-- ══ REVENUE ══ -->
+    <div class="panel" id="panel-revenue">
+      <div class="stats-row" style="grid-template-columns:repeat(3,1fr)">
+        <div class="stat-card">
+          <div class="stat-label">TODAY</div>
+          <div class="stat-value" style="color:var(--gold)">4,750</div>
+          <div class="stat-sub">XAF collected</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">THIS MONTH</div>
+          <div class="stat-value" style="color:var(--gold)">48,250</div>
+          <div class="stat-sub">XAF · 12 transactions</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">ALL TIME</div>
+          <div class="stat-value" style="color:var(--gold)">142,900</div>
+          <div class="stat-sub">XAF total revenue</div>
+        </div>
+      </div>
+      <div class="chart-bar-wrap">
+        <div class="section-title">MONTHLY BREAKDOWN <div class="stl"></div></div>
+        <div class="chart-bars" id="monthChart"></div>
+      </div>
+      <div class="section-title">ALL TRANSACTIONS <div class="stl"></div></div>
+      <div class="table-wrap">
+        <table class="data-table" id="allTxnTable"></table>
+      </div>
+    </div>
+
+    <!-- ══ UPLOAD ══ -->
+    <div class="panel" id="panel-upload">
+      <div class="upload-grid">
+        <div>
+          <div class="upload-zone" id="uploadZone" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="handleDrop(event)">
+            <div class="upload-icon-big" id="uploadIconBig">📁</div>
+            <p id="uploadZoneText">Drag & drop your file here</p>
+            <p>or <label class="upload-link" for="fileInput">browse to upload</label></p>
+            <input type="file" id="fileInput" accept="video/*,application/pdf,image/*,.docx,.doc" onchange="handleFile(event)" style="display:none"/>
+            <p style="font-family:var(--font-mono);font-size:0.65rem;margin-top:8px;color:var(--text-muted)">MP4, PDF, JPG, PNG, DOCX · Max 500MB</p>
+          </div>
+        </div>
+        <div>
+          <div class="form-group">
+            <label class="form-label">CONTENT TITLE</label>
+            <input class="form-input" id="uploadTitle" placeholder="Enter a clear title"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">DESCRIPTION</label>
+            <textarea class="form-input" id="uploadDesc" placeholder="Describe your content…" rows="3"></textarea>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">PRICE (XAF)</label>
+              <select class="form-input" id="uploadPrice" onchange="toggleCustom()">
+                <option value="250">250 XAF</option>
+                <option value="500">500 XAF</option>
+                <option value="1000">1,000 XAF</option>
+                <option value="custom">Custom…</option>
+              </select>
+            </div>
+            <div class="form-group" id="customPriceGroup" style="display:none">
+              <label class="form-label">CUSTOM PRICE</label>
+              <input class="form-input" type="number" id="customPrice" placeholder="Min. 250" min="250"/>
+            </div>
+          </div>
+          <div class="toggle-row">
+            <span>Anti-Screenshot Protection</span>
+            <label class="toggle"><input type="checkbox" id="antiScreenshot" checked onchange="updateToggleLabel()"/><span class="toggle-slider"></span></label>
+            <span class="toggle-status" id="antiLabel" style="color:var(--good)">ENABLED</span>
+          </div>
+          <div class="toggle-row">
+            <span>Dynamic Watermark</span>
+            <label class="toggle"><input type="checkbox" id="watermarkToggle" checked/><span class="toggle-slider"></span></label>
+            <span class="toggle-status" style="color:var(--good)">ENABLED</span>
+          </div>
+          <div class="toggle-row">
+            <span>Hardware DRM (EME)</span>
+            <label class="toggle"><input type="checkbox" id="drmToggle" checked/><span class="toggle-slider"></span></label>
+            <span class="toggle-status" style="color:var(--good)">ENABLED</span>
+          </div>
+          <button class="btn-gold" style="width:100%;padding:13px" onclick="uploadFile()">⚡ Upload & Protect Content</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ MANAGE FILES ══ -->
+    <div class="panel" id="panel-files">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+        <div>
+          <div class="section-title" style="margin-bottom:4px">ALL CONTENT FILES <div class="stl"></div></div>
+          <span style="font-family:var(--font-mono);font-size:0.7rem;color:var(--text-muted)" id="fileCountLabel">8 files</span>
+        </div>
+        <button class="btn-gold btn-sm" onclick="showPanel('upload',null)">+ Upload New</button>
+      </div>
+      <div class="files-grid" id="filesGrid"></div>
+    </div>
+
+    <!-- ══ USERS ══ -->
+    <div class="panel" id="panel-users">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+        <div class="section-title" style="margin-bottom:0">ALL USERS <div class="stl"></div></div>
+        <input class="form-input" style="max-width:240px" type="text" placeholder="🔍 Search users…" oninput="filterUsers(this.value)"/>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th>USER</th><th>JOINED</th><th>PURCHASES</th><th>SPENT (XAF)</th><th>SCREENSHOT ATTEMPTS</th><th>STATUS</th><th>ACTIONS</th></tr></thead>
+          <tbody id="usersBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══ FRAUD ALERTS ══ -->
+    <div class="panel" id="panel-fraud">
+      <div class="section-title">FRAUD & SECURITY ALERTS <div class="stl"></div></div>
+      <div id="fraudList"></div>
+    </div>
+
+    <!-- ══ TRANSACTIONS ══ -->
+    <div class="panel" id="panel-transactions">
+      <div class="section-title">ALL TRANSACTIONS <div class="stl"></div></div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th>TXN ID</th><th>USER</th><th>CONTENT</th><th>AMOUNT</th><th>DATE</th><th>STATUS</th></tr></thead>
+          <tbody id="txnsBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══ SETTINGS ══ -->
+    <div class="panel" id="panel-settings">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px">
+          <h3 style="font-family:var(--font-display);font-size:0.85rem;color:var(--gold);margin-bottom:16px;letter-spacing:0.08em">PAYMENT SETTINGS</h3>
+          <div class="form-group">
+            <label class="form-label">MOMO MERCHANT NUMBER</label>
+            <input class="form-input" value="682613312" readonly style="font-family:var(--font-mono);color:var(--gold)"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">MINIMUM PRICE (XAF)</label>
+            <input class="form-input" type="number" value="250" min="100"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">WEBHOOK URL</label>
+            <input class="form-input" placeholder="https://your-backend.com/webhook"/>
+          </div>
+          <button class="btn-gold" onclick="showToast('Payment settings saved!','good')">Save Payment Settings</button>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px">
+          <h3 style="font-family:var(--font-display);font-size:0.85rem;color:var(--gold);margin-bottom:16px;letter-spacing:0.08em">SECURITY DEFAULTS</h3>
+          <div class="toggle-row">
+            <span>Enable DRM on all uploads</span>
+            <label class="toggle"><input type="checkbox" checked/><span class="toggle-slider"></span></label>
+          </div>
+          <div class="toggle-row">
+            <span>Forensic watermarks</span>
+            <label class="toggle"><input type="checkbox" checked/><span class="toggle-slider"></span></label>
+          </div>
+          <div class="toggle-row">
+            <span>Auto-freeze on 3 attempts</span>
+            <label class="toggle"><input type="checkbox" checked/><span class="toggle-slider"></span></label>
+          </div>
+          <div class="toggle-row">
+            <span>Blur on focus loss</span>
+            <label class="toggle"><input type="checkbox" checked/><span class="toggle-slider"></span></label>
+          </div>
+          <div class="form-group" style="margin-top:8px">
+            <label class="form-label">MAX SCREENSHOT ATTEMPTS</label>
+            <select class="form-input"><option>1</option><option>2</option><option selected>3</option><option>5</option></select>
+          </div>
+          <button class="btn-gold" onclick="showToast('Security settings saved!','good')">Save Security Settings</button>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px">
+          <h3 style="font-family:var(--font-display);font-size:0.85rem;color:var(--gold);margin-bottom:16px;letter-spacing:0.08em">ADMIN PASSWORD</h3>
+          <div class="form-group">
+            <label class="form-label">CURRENT PASSWORD</label>
+            <input class="form-input" type="password" placeholder="••••••••"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">NEW PASSWORD</label>
+            <input class="form-input" type="password" placeholder="••••••••"/>
+          </div>
+          <button class="btn-gold" onclick="showToast('Password updated!','good')">Update Password</button>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px">
+          <h3 style="font-family:var(--font-display);font-size:0.85rem;color:var(--gold);margin-bottom:16px;letter-spacing:0.08em">PLATFORM INFO</h3>
+          <div style="font-family:var(--font-mono);font-size:0.75rem;line-height:2;color:var(--text-dim)">
+            Platform: <span style="color:var(--text)">BIX TECH v1.0</span><br/>
+            DRM Engine: <span style="color:var(--good)">Widevine EME ✅</span><br/>
+            Canvas Renderer: <span style="color:var(--good)">Active ✅</span><br/>
+            Merchant: <span style="color:var(--gold)">682613312</span><br/>
+            Min. Price: <span style="color:var(--text)">250 XAF</span><br/>
+            Hosted on: <span style="color:var(--text)">GitHub Pages</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /page-content -->
+</div><!-- /main -->
+
+<!-- Delete Confirm Modal -->
+<div class="modal-overlay" id="deleteModal" onclick="if(event.target===this)closeModal('deleteModal')">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('deleteModal')">✕</button>
+    <div class="modal-title" style="color:var(--bad)">⚠️ DELETE FILE</div>
+    <p style="color:var(--text-dim);margin-bottom:20px;font-size:0.88rem">Are you sure you want to delete "<span id="deleteFileName"></span>"? This cannot be undone. Users who purchased it will lose access.</p>
+    <div style="display:flex;gap:10px">
+      <button class="btn-ghost" style="flex:1" onclick="closeModal('deleteModal')">Cancel</button>
+      <button class="btn-danger" style="flex:1" onclick="confirmDelete()">Delete Permanently</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Price Modal -->
+<div class="modal-overlay" id="editModal" onclick="if(event.target===this)closeModal('editModal')">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('editModal')">✕</button>
+    <div class="modal-title">EDIT FILE</div>
+    <div class="form-group">
+      <label class="form-label">TITLE</label>
+      <input class="form-input" id="editTitle"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">PRICE (XAF)</label>
+      <select class="form-input" id="editPrice">
+        <option value="250">250 XAF</option>
+        <option value="500">500 XAF</option>
+        <option value="1000">1,000 XAF</option>
+        <option value="2000">2,000 XAF</option>
+        <option value="custom">Custom</option>
+      </select>
+    </div>
+    <div class="toggle-row">
+      <span>Anti-Screenshot</span>
+      <label class="toggle"><input type="checkbox" id="editProtect" checked/><span class="toggle-slider"></span></label>
+      <span id="editProtectLabel" style="color:var(--good);font-family:var(--font-mono);font-size:0.72rem">ENABLED</span>
+    </div>
+    <button class="btn-gold" style="width:100%" onclick="saveEdit()">Save Changes</button>
+  </div>
+</div>
+
+<script>
+// ── DATA ──
+const TYPE_ICONS = {video:'🎬',pdf:'📄',doc:'📝',image:'🖼'};
+let CATALOG = [
+  {id:1,title:'Complete Forex Masterclass',type:'video',price:1500,desc:'Insider trading strategies from certified Forex gurus.',protected:true,sales:6},
+  {id:2,title:'BEPC Maths Guide 2025',type:'pdf',price:500,desc:'Full revision guide for BEPC maths.',protected:true,sales:4},
+  {id:3,title:'Real Estate Investment Kit',type:'doc',price:1000,desc:'Templates and tools for real estate investors.',protected:true,sales:2},
+  {id:4,title:'Digital Marketing Blueprint',type:'pdf',price:750,desc:'Step-by-step guide to growing any business online.',protected:true,sales:3},
+  {id:5,title:'Premium Logo Pack Vol. 3',type:'image',price:250,desc:'50 high-resolution logo templates.',protected:true,sales:8},
+  {id:6,title:'Crypto Entry Signals 2025',type:'doc',price:2000,desc:'Entry-point strategies for major crypto assets.',protected:true,sales:1},
+  {id:7,title:'French Grammar Crash Course',type:'video',price:500,desc:'Master French grammar in 30 days.',protected:true,sales:5},
+  {id:8,title:'Photography Presets Bundle',type:'image',price:250,desc:'100 Lightroom presets for African landscapes.',protected:false,sales:9},
+];
+let USERS = [
+  {id:'USR001',name:'Alain Mbakop',  email:'alain@ex.com',  joined:'Jan 15, 2025',purchases:5,spent:2750,attempts:0,status:'active'},
+  {id:'USR002',name:'Fatima Bello',  email:'fatima@ex.com', joined:'Feb 3, 2025', purchases:2,spent:750, attempts:2,status:'flagged'},
+  {id:'USR003',name:'Jean-Pierre N.',email:'jp@ex.com',     joined:'Nov 20, 2024',purchases:8,spent:9500,attempts:0,status:'active'},
+  {id:'USR004',name:'Sophie Awa',    email:'sophie@ex.com', joined:'Mar 1, 2025', purchases:1,spent:250, attempts:3,status:'frozen'},
+];
+const TRANSACTIONS = [
+  {id:'BIX-10021',user:'Alain Mbakop',  content:'Complete Forex Masterclass',amount:1500,date:'Mar 1, 2025', status:'success'},
+  {id:'BIX-10020',user:'Jean-Pierre N.',content:'Photography Presets Bundle', amount:250, date:'Mar 1, 2025', status:'success'},
+  {id:'BIX-10019',user:'Sophie Awa',    content:'Premium Logo Pack Vol. 3',  amount:250, date:'Feb 28, 2025',status:'success'},
+  {id:'BIX-10018',user:'Fatima Bello',  content:'BEPC Maths Guide 2025',     amount:500, date:'Feb 27, 2025',status:'success'},
+  {id:'BIX-10017',user:'Jean-Pierre N.',content:'Crypto Entry Signals 2025', amount:2000,date:'Feb 26, 2025',status:'success'},
+  {id:'BIX-10016',user:'Alain Mbakop',  content:'Digital Marketing Blueprint',amount:750,date:'Feb 25, 2025',status:'success'},
+  {id:'BIX-10015',user:'Jean-Pierre N.',content:'Real Estate Investment Kit', amount:1000,date:'Feb 24, 2025',status:'success'},
+];
+const WEEK_DATA = [
+  {day:'Mon',amount:4500},{day:'Tue',amount:2250},{day:'Wed',amount:7500},{day:'Thu',amount:1000},
+  {day:'Fri',amount:8750},{day:'Sat',amount:12500},{day:'Sun',amount:4750},
+];
+const MONTH_DATA = [
+  {day:'Jan',amount:32000},{day:'Feb',amount:41500},{day:'Mar',amount:48250},{day:'Apr',amount:0},
+];
+let pendingDeleteId = null;
+let editingId = null;
+const FRAUD_ALERTS = [
+  {id:'FA001',user:'Fatima Bello',userId:'USR002',attempts:2,time:'2 hours ago',content:'Complete Forex Masterclass',status:'open'},
+  {id:'FA002',user:'Sophie Awa',  userId:'USR004',attempts:3,time:'3 days ago', content:'BEPC Maths Guide 2025',    status:'resolved'},
+];
+
+// ── INIT ──
+window.addEventListener('DOMContentLoaded',()=>{
+  renderOverview(); renderFiles(); renderUsers(USERS); renderFraud(); renderTransactions(TRANSACTIONS);
+  renderChart('chartBars',WEEK_DATA);
+  renderChart('monthChart',MONTH_DATA);
+});
+
+function showPanel(name,btn){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  const titles={overview:'OVERVIEW',revenue:'REVENUE',upload:'UPLOAD FILE',files:'MANAGE FILES',users:'USERS',fraud:'FRAUD ALERTS',transactions:'TRANSACTIONS',settings:'SETTINGS'};
+  document.getElementById('topbarTitle').textContent=titles[name]||name.toUpperCase();
+  if(window.innerWidth<900) toggleSidebar(false);
+}
+
+// ── OVERVIEW ──
+function renderOverview(){
+  document.getElementById('fileCountStat').textContent = CATALOG.length;
+  const tbody = `<thead><tr><th>TXN ID</th><th>USER</th><th>CONTENT</th><th>AMOUNT</th><th>DATE</th><th>STATUS</th></tr></thead>
+  <tbody>${TRANSACTIONS.slice(0,5).map(t=>`
+    <tr>
+      <td style="font-family:var(--font-mono);font-size:0.72rem;color:var(--gold)">${t.id}</td>
+      <td>${t.user}</td>
+      <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.content}</td>
+      <td style="font-family:var(--font-mono);color:var(--good)">${t.amount.toLocaleString()} XAF</td>
+      <td style="font-family:var(--font-mono);font-size:0.72rem;color:var(--text-muted)">${t.date}</td>
+      <td><span class="status-pill status-success">✅ Success</span></td>
+    </tr>`).join('')}</tbody>`;
+  document.getElementById('recentTxnTable').innerHTML = tbody;
+}
+
+// ── CHART ──
+function renderChart(id,data){
+  const container = document.getElementById(id);
+  if(!container) return;
+  const max = Math.max(...data.map(d=>d.amount));
+  container.innerHTML = data.map(d=>`
+    <div class="chart-bar-col">
+      <div class="chart-bar-val">${d.amount>0?Math.round(d.amount/1000)+'k':''}</div>
+      <div class="chart-bar" style="height:${d.amount>0?Math.round((d.amount/max)*100):4}%"></div>
+      <div class="chart-bar-label">${d.day}</div>
+    </div>`).join('');
+}
+
+// ── FILES ──
+function renderFiles(){
+  document.getElementById('filesGrid').innerHTML = CATALOG.map(f=>`
+    <div class="file-card">
+      <div class="file-thumb">
+        ${TYPE_ICONS[f.type]||'📦'}
+        ${f.protected?'<div class="file-drm-tag">🛡 DRM</div>':'<div class="file-unprotected-tag">⚠ OPEN</div>'}
+      </div>
+      <div class="file-body">
+        <div class="file-title">${f.title}</div>
+        <div class="file-meta">
+          <span class="file-price">${f.price.toLocaleString()} <span style="font-size:0.65rem;opacity:0.7">XAF</span></span>
+          <span class="file-type-tag">${f.type.toUpperCase()}</span>
+        </div>
+        <div style="font-family:var(--font-mono);font-size:0.62rem;color:var(--text-muted);margin-bottom:10px">${f.sales} sale${f.sales!==1?'s':''} · ${f.protected?'🛡 Protected':'⚠ Unprotected'}</div>
+        <div class="file-actions">
+          <button class="btn-ghost btn-sm" style="flex:1" onclick="openEdit(${f.id})">✏ Edit</button>
+          <button class="btn-danger btn-sm" onclick="openDelete(${f.id})">🗑</button>
+        </div>
+      </div>
+    </div>`).join('');
+  const lbl = document.getElementById('fileCountLabel');
+  if(lbl) lbl.textContent = CATALOG.length+' files';
+}
+
+// ── USERS ──
+function renderUsers(list){
+  document.getElementById('usersBody').innerHTML = list.map(u=>`
+    <tr>
+      <td>
+        <strong>${u.name}</strong><br/>
+        <span style="font-family:var(--font-mono);font-size:0.62rem;color:var(--text-muted)">${u.email}</span>
+      </td>
+      <td style="font-family:var(--font-mono);font-size:0.72rem;color:var(--text-muted)">${u.joined}</td>
+      <td style="text-align:center">${u.purchases}</td>
+      <td style="font-family:var(--font-mono);color:var(--gold)">${u.spent.toLocaleString()}</td>
+      <td style="text-align:center">
+        <span style="color:${u.attempts>=3?'var(--bad)':u.attempts>=2?'var(--warn)':'var(--good)'}">${u.attempts} / 3</span>
+      </td>
+      <td>
+        <span class="status-pill ${u.status==='active'?'status-active':u.status==='frozen'?'status-frozen':'status-flagged'}">
+          ${u.status==='active'?'✅ Active':u.status==='frozen'?'🚫 Frozen':'⚠️ Flagged'}
+        </span>
+      </td>
+      <td>
+        <div style="display:flex;gap:6px">
+          ${u.status!=='frozen'
+            ?`<button class="btn-danger btn-sm" onclick="toggleUser('${u.id}','frozen')">Freeze</button>`
+            :`<button class="btn-warn btn-sm" onclick="toggleUser('${u.id}','active')">Unfreeze</button>`
+          }
+          <button class="btn-ghost btn-sm" onclick="viewUserDetail('${u.id}')">View</button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+function filterUsers(q){
+  renderUsers(USERS.filter(u=>u.name.toLowerCase().includes(q.toLowerCase())||u.email.toLowerCase().includes(q.toLowerCase())));
+}
+
+function toggleUser(id,status){
+  const u=USERS.find(u=>u.id===id);
+  if(!u) return;
+  u.status=status;
+  if(status==='active') u.attempts=0;
+  renderUsers(USERS);
+  const fraudAlert=FRAUD_ALERTS.find(f=>f.userId===id&&f.status==='open');
+  if(fraudAlert&&status==='frozen') fraudAlert.status='resolved';
+  updateFraudCount();
+  showToast(u.name+(status==='frozen'?' frozen.':" unfrozen."),'info');
+}
+
+function viewUserDetail(id){
+  const u=USERS.find(u=>u.id===id);
+  if(!u) return;
+  showToast('Viewing: '+u.name,'info');
+}
+
+// ── FRAUD ──
+function renderFraud(){
+  document.getElementById('fraudList').innerHTML = FRAUD_ALERTS.map(f=>`
+    <div style="background:var(--surface);border:1px solid ${f.status==='open'?'rgba(239,68,68,0.3)':'var(--border)'};border-radius:var(--radius-lg);padding:20px;margin-bottom:12px;display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+      <div style="font-size:1.8rem">${f.status==='open'?'🚨':'✅'}</div>
+      <div style="flex:1">
+        <div style="font-family:var(--font-display);font-size:0.8rem;margin-bottom:4px">${f.user} — ${f.attempts} attempt${f.attempts!==1?'s':''}</div>
+        <div style="font-family:var(--font-mono);font-size:0.68rem;color:var(--text-muted)">On: ${f.content} · ${f.time}</div>
+      </div>
+      <span class="status-pill ${f.status==='open'?'status-frozen':'status-active'}">${f.status==='open'?'🔴 Open':'✅ Resolved'}</span>
+      ${f.status==='open'?`<button class="btn-danger" onclick="resolveFraud('${f.id}','${f.userId}')">Freeze & Resolve</button>`:''}
+    </div>`).join('');
+}
+
+function resolveFraud(fid,uid){
+  toggleUser(uid,'frozen');
+  const f=FRAUD_ALERTS.find(a=>a.id===fid);
+  if(f) f.status='resolved';
+  renderFraud(); updateFraudCount();
+  showToast('User frozen. Alert resolved.','good');
+}
+
+function updateFraudCount(){
+  const open=FRAUD_ALERTS.filter(f=>f.status==='open').length;
+  document.getElementById('fraudCount').textContent=open;
+  document.getElementById('fraudAlertStat').textContent=open;
+}
+
+function freezeFromAlert(uid){ toggleUser(uid,'frozen'); dismissAlert(); renderFraud(); updateFraudCount(); }
+function dismissAlert(){ document.getElementById('fraudAlertBar').classList.add('hidden'); }
+
+// ── TRANSACTIONS ──
+function renderTransactions(list){
+  document.getElementById('txnsBody').innerHTML = list.map(t=>`
+    <tr>
+      <td style="font-family:var(--font-mono);font-size:0.72rem;color:var(--gold)">${t.id}</td>
+      <td>${t.user}</td>
+      <td>${t.content}</td>
+      <td style="font-family:var(--font-mono);color:var(--good)">${t.amount.toLocaleString()} XAF</td>
+      <td style="font-family:var(--font-mono);font-size:0.72rem;color:var(--text-muted)">${t.date}</td>
+      <td><span class="status-pill status-success">✅ Success</span></td>
+    </tr>`).join('');
+}
+
+// ── UPLOAD ──
+function handleFile(e){
+  const f=e.target.files[0]; if(!f) return;
+  document.getElementById('uploadIconBig').textContent = f.type.startsWith('video')?'🎬':f.type==='application/pdf'?'📄':f.type.startsWith('image')?'🖼':'📝';
+  document.getElementById('uploadZoneText').textContent = f.name;
+  if(!document.getElementById('uploadTitle').value)
+    document.getElementById('uploadTitle').value = f.name.replace(/\.[^.]+$/,'').replace(/_/g,' ');
+}
+
+function handleDrop(e){
+  e.preventDefault();
+  document.getElementById('uploadZone').classList.remove('drag-over');
+  const f=e.dataTransfer.files[0];
+  if(f){ document.getElementById('fileInput').files = e.dataTransfer.files; handleFile({target:e.dataTransfer}); }
+}
+
+function toggleCustom(){
+  document.getElementById('customPriceGroup').style.display =
+    document.getElementById('uploadPrice').value==='custom'?'block':'none';
+}
+
+function updateToggleLabel(){
+  const checked=document.getElementById('antiScreenshot').checked;
+  document.getElementById('antiLabel').textContent=checked?'ENABLED':'DISABLED';
+  document.getElementById('antiLabel').style.color=checked?'var(--good)':'var(--bad)';
+}
+
+function uploadFile(){
+  const title=document.getElementById('uploadTitle').value.trim();
+  if(!title){showToast('Please enter a title.','bad');return;}
+  const priceVal=document.getElementById('uploadPrice').value;
+  const price=priceVal==='custom'?parseInt(document.getElementById('customPrice').value)||250:parseInt(priceVal);
+  const prot=document.getElementById('antiScreenshot').checked;
+  const fi=document.getElementById('fileInput');
+  let type='doc';
+  if(fi.files[0]){
+    const m=fi.files[0].type;
+    if(m.startsWith('video')) type='video';
+    else if(m==='application/pdf') type='pdf';
+    else if(m.startsWith('image')) type='image';
+  }
+  CATALOG.push({id:Date.now(),title,type,price,desc:'Uploaded via Admin Panel.',protected:prot,sales:0});
+  renderFiles(); renderOverview();
+  document.getElementById('uploadTitle').value='';
+  document.getElementById('uploadIconBig').textContent='📁';
+  document.getElementById('uploadZoneText').textContent='Drag & drop your file here';
+  showToast('✅ "'+title+'" uploaded & protected!','good');
+  showPanel('files',null);
+}
+
+// ── EDIT / DELETE ──
+function openEdit(id){
+  const f=CATALOG.find(c=>c.id===id); if(!f) return;
+  editingId=id;
+  document.getElementById('editTitle').value=f.title;
+  const sel=document.getElementById('editPrice');
+  const opts=['250','500','1000','2000'];
+  sel.value=opts.includes(String(f.price))?String(f.price):'custom';
+  document.getElementById('editProtect').checked=f.protected;
+  document.getElementById('editProtectLabel').textContent=f.protected?'ENABLED':'DISABLED';
+  document.getElementById('editProtectLabel').style.color=f.protected?'var(--good)':'var(--bad)';
+  document.getElementById('editProtect').onchange=function(){
+    document.getElementById('editProtectLabel').textContent=this.checked?'ENABLED':'DISABLED';
+    document.getElementById('editProtectLabel').style.color=this.checked?'var(--good)':'var(--bad)';
+  };
+  openModal('editModal');
+}
+
+function saveEdit(){
+  const f=CATALOG.find(c=>c.id===editingId); if(!f) return;
+  f.title=document.getElementById('editTitle').value;
+  const sv=document.getElementById('editPrice').value;
+  f.price=sv==='custom'?f.price:parseInt(sv);
+  f.protected=document.getElementById('editProtect').checked;
+  renderFiles(); renderOverview();
+  closeModal('editModal');
+  showToast('File updated!','good');
+}
+
+function openDelete(id){
+  pendingDeleteId=id;
+  const f=CATALOG.find(c=>c.id===id);
+  document.getElementById('deleteFileName').textContent=f?f.title:'';
+  openModal('deleteModal');
+}
+
+function confirmDelete(){
+  CATALOG=CATALOG.filter(c=>c.id!==pendingDeleteId);
+  renderFiles(); renderOverview();
+  closeModal('deleteModal');
+  showToast('File deleted.','bad');
+}
+
+// ── MODAL ──
+function openModal(id){ const el=document.getElementById(id);el.style.display='flex'; }
+function closeModal(id){ const el=document.getElementById(id);el.style.display='none'; }
+
+// ── TOAST ──
+function showToast(msg,type='info'){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.className='toast '+type+' show';
+  setTimeout(()=>t.classList.remove('show'),3500);
+}
+
+// ── SIDEBAR ──
+function toggleSidebar(forceClose){
+  const s=document.getElementById('sidebar');
+  const o=document.getElementById('sidebarOverlay');
+  const open=s.classList.contains('open');
+  if(forceClose===false||open){s.classList.remove('open');o.classList.remove('show');}
+  else{s.classList.add('open');o.classList.add('show');}
+}
+</script>
+</body>
+</html>

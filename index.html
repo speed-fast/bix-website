@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BIX TECH — Secure Digital Vault</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Syne:wght@400;600;800&family=JetBrains+Mono:wght@300;400;700&display=swap" rel="stylesheet" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#0a0a0a" />
+</head>
+<body>
+
+<!-- NOISE OVERLAY -->
+<div class="noise-overlay"></div>
+
+<!-- ANTI-SCREENSHOT MASK -->
+<div id="screenshotMask" class="screenshot-mask"></div>
+
+<!-- BLUR OVERLAY (focus-loss protection) -->
+<div id="blurOverlay" class="blur-overlay">
+  <div class="blur-warning">
+    <div class="shield-icon large">⚡</div>
+    <h2>CONTENT PROTECTED</h2>
+    <p>Screen capture attempt detected.<br/>Return to BIX TECH to continue.</p>
+    <span class="attempt-counter" id="attemptCounter">Attempt: 0 / 3</span>
+  </div>
+</div>
+
+<!-- FRAUD TOAST -->
+<div id="fraudToast" class="fraud-toast">
+  <span>🚨 Screenshot attempt logged. Account flagged.</span>
+</div>
+
+<!-- ===================== NAVBAR ===================== -->
+<nav class="navbar">
+  <div class="nav-inner">
+    <div class="logo">
+      <span class="logo-bix">BIX</span><span class="logo-tech">TECH</span>
+      <div class="logo-tag">SECURE VAULT</div>
+    </div>
+    <ul class="nav-links">
+      <li><a href="#home">Home</a></li>
+      <li><a href="#store">Store</a></li>
+      <li><a href="#security">Security</a></li>
+      <li><a href="#how-it-works">How It Works</a></li>
+    </ul>
+    <div class="nav-actions">
+      <button class="btn-ghost" onclick="showModal('loginModal')">Sign In</button>
+      <button class="btn-gold" onclick="showModal('signupModal')">Get Access</button>
+    </div>
+    <button class="hamburger" id="hamburger" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="#store" onclick="toggleMenu()">Store</a>
+    <a href="#security" onclick="toggleMenu()">Security</a>
+    <a href="#how-it-works" onclick="toggleMenu()">How It Works</a>
+    <button class="btn-gold full-width" onclick="showModal('signupModal');toggleMenu()">Get Access</button>
+  </div>
+</nav>
+
+<!-- ===================== HERO ===================== -->
+<section class="hero" id="home">
+  <div class="hero-grid-bg"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-content">
+    <div class="hero-badge">
+      <span class="shield-icon">🛡</span>
+      MILITARY-GRADE CONTENT PROTECTION
+    </div>
+    <h1 class="hero-title">
+      THE DIGITAL<br/>
+      <span class="gold-text">VAULT</span><br/>
+      FOR CREATORS
+    </h1>
+    <p class="hero-sub">
+      Sell videos, PDFs, images & documents with zero-leak security.<br/>
+      Hardware-level DRM. Dynamic watermarking. One-tap MoMo payments.
+    </p>
+    <div class="hero-cta">
+      <button class="btn-gold large" onclick="showModal('signupModal')">Start Selling — Free</button>
+      <button class="btn-ghost large" onclick="scrollTo('#store')">Browse Content ↓</button>
+    </div>
+    <div class="hero-stats">
+      <div class="stat">
+        <span class="stat-num">250</span>
+        <span class="stat-label">XAF Min. Price</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat">
+        <span class="stat-num">0</span>
+        <span class="stat-label">Data Leaks</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat">
+        <span class="stat-num">100%</span>
+        <span class="stat-label">MoMo Secure</span>
+      </div>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <div class="vault-card">
+      <div class="vault-top">
+        <span class="secure-badge">🛡 PROTECTED</span>
+        <span class="file-type">VIDEO</span>
+      </div>
+      <div class="vault-preview">
+        <div class="drm-overlay">
+          <div class="drm-icon">⬡</div>
+          <span>DRM Active</span>
+        </div>
+        <div class="watermark-demo">
+          <span>USER#4821</span>
+          <span>USER#4821</span>
+          <span>USER#4821</span>
+        </div>
+      </div>
+      <div class="vault-footer">
+        <span class="price-tag">1,500 XAF</span>
+        <button class="quick-buy-btn" onclick="showModal('payModal')">⚡ Buy Now</button>
+      </div>
+    </div>
+    <div class="floating-badge badge-1">🔒 Screenshot Blocked</div>
+    <div class="floating-badge badge-2">💰 682613312</div>
+    <div class="floating-badge badge-3">🎯 DRM Active</div>
+  </div>
+</section>
+
+<!-- ===================== STORE ===================== -->
+<section class="store-section" id="store">
+  <div class="section-header">
+    <div class="section-tag">MARKETPLACE</div>
+    <h2>PREMIUM <span class="gold-text">CONTENT</span></h2>
+    <p>All content is DRM-protected. Screenshots are disabled. Your purchase is tied to your account.</p>
+  </div>
+
+  <!-- Filter Bar -->
+  <div class="filter-bar">
+    <button class="filter-btn active" data-filter="all">All</button>
+    <button class="filter-btn" data-filter="video">🎬 Videos</button>
+    <button class="filter-btn" data-filter="pdf">📄 PDFs</button>
+    <button class="filter-btn" data-filter="image">🖼 Images</button>
+    <button class="filter-btn" data-filter="doc">📝 Documents</button>
+  </div>
+
+  <!-- Content Grid -->
+  <div class="content-grid" id="contentGrid">
+    <!-- Cards injected by JS -->
+  </div>
+</section>
+
+<!-- ===================== SECURITY SECTION ===================== -->
+<section class="security-section" id="security">
+  <div class="section-header">
+    <div class="section-tag">ANTI-PIRACY</div>
+    <h2>ZERO-LEAK <span class="gold-text">ARCHITECTURE</span></h2>
+    <p>BIX TECH implements enterprise-grade security across every layer of the stack.</p>
+  </div>
+  <div class="security-grid">
+    <div class="sec-card">
+      <div class="sec-icon">📺</div>
+      <h3>Hardware DRM</h3>
+      <p>Widevine/FairPlay integration communicates directly with device hardware. Screen recorders turn the video pitch-black automatically.</p>
+      <div class="sec-tag">VIDEO</div>
+    </div>
+    <div class="sec-card">
+      <div class="sec-icon">👁</div>
+      <h3>Invisible Mask</h3>
+      <p>A moving, semi-transparent overlay confuses screen-capture algorithms on PDFs and images without affecting your viewing experience.</p>
+      <div class="sec-tag">PDF / IMAGE</div>
+    </div>
+    <div class="sec-card">
+      <div class="sec-icon">💧</div>
+      <h3>Forensic Watermark</h3>
+      <p>Every page and video frame is uniquely branded with the buyer's ID. Photo taken with another phone? Their identity is burned in.</p>
+      <div class="sec-tag">ALL FILES</div>
+    </div>
+    <div class="sec-card">
+      <div class="sec-icon">🔐</div>
+      <h3>Encrypted Sandbox</h3>
+      <p>Files are stored in IndexedDB in encrypted format. Users can never find the raw file in their Downloads folder.</p>
+      <div class="sec-tag">ALL FILES</div>
+    </div>
+    <div class="sec-card">
+      <div class="sec-icon">🚨</div>
+      <h3>Blur on Focus-Loss</h3>
+      <p>The moment you switch tabs or open a screenshot tool, content instantly blurs and an attempt is logged against your account.</p>
+      <div class="sec-tag">REAL-TIME</div>
+    </div>
+    <div class="sec-card">
+      <div class="sec-icon">🤖</div>
+      <h3>Fraud Detection</h3>
+      <p>3 screenshot attempts = automatic account freeze. Admins are notified instantly with a full activity log.</p>
+      <div class="sec-tag">ADMIN ALERT</div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== HOW IT WORKS ===================== -->
+<section class="how-section" id="how-it-works">
+  <div class="section-header">
+    <div class="section-tag">PROCESS</div>
+    <h2>ONE-TAP <span class="gold-text">PURCHASE</span></h2>
+  </div>
+  <div class="steps-container">
+    <div class="step">
+      <div class="step-num">01</div>
+      <div class="step-content">
+        <h3>Choose Content</h3>
+        <p>Browse the secure marketplace. Every item shows a 🛡 Secure Badge.</p>
+      </div>
+    </div>
+    <div class="step-arrow">→</div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <div class="step-content">
+        <h3>Tap Quick Buy</h3>
+        <p>Hit ⚡ Buy Now. From 250 XAF. The cart is bypassed entirely.</p>
+      </div>
+    </div>
+    <div class="step-arrow">→</div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <div class="step-content">
+        <h3>MoMo PIN Prompt</h3>
+        <p>Enter your Mobile Money PIN. Funds settle at merchant 682613312.</p>
+      </div>
+    </div>
+    <div class="step-arrow">→</div>
+    <div class="step">
+      <div class="step-num">04</div>
+      <div class="step-content">
+        <h3>Instant Access</h3>
+        <p>Content is unlocked in your Vault. DRM protection activates immediately.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== COMPARISON TABLE ===================== -->
+<section class="compare-section">
+  <div class="section-header">
+    <div class="section-tag">ADVANTAGE</div>
+    <h2>WHY <span class="gold-text">BIX TECH</span> DOMINATES</h2>
+  </div>
+  <div class="compare-wrapper">
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>Feature</th>
+          <th>Competitor Sites</th>
+          <th class="bix-col">BIX TECH</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Minimum Price</td>
+          <td class="bad">Usually 1,000+ XAF</td>
+          <td class="good bix-col">⚡ 250 XAF Micro-sales</td>
+        </tr>
+        <tr>
+          <td>Asset Security</td>
+          <td class="bad">Easy to record/screenshot</td>
+          <td class="good bix-col">🛡 Hardware-Level DRM Blackout</td>
+        </tr>
+        <tr>
+          <td>Accountability</td>
+          <td class="bad">Anonymous users</td>
+          <td class="good bix-col">💧 Dynamic Forensic Watermarks</td>
+        </tr>
+        <tr>
+          <td>Payment Flow</td>
+          <td class="bad">Complex multi-step cart</td>
+          <td class="good bix-col">📱 One-Tap MoMo (682613312)</td>
+        </tr>
+        <tr>
+          <td>Fraud Detection</td>
+          <td class="bad">None</td>
+          <td class="good bix-col">🤖 Auto-freeze after 3 attempts</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ===================== FOOTER ===================== -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="logo">
+        <span class="logo-bix">BIX</span><span class="logo-tech">TECH</span>
+      </div>
+      <p>The most secure digital content marketplace in Cameroon.</p>
+      <p class="momo-id">💳 MoMo Merchant: <strong>682613312</strong></p>
+    </div>
+    <div class="footer-links">
+      <h4>Platform</h4>
+      <a href="#">Store</a>
+      <a href="#">My Vault</a>
+      <a href="#">Sell Content</a>
+      <a href="#">Pricing</a>
+    </div>
+    <div class="footer-links">
+      <h4>Security</h4>
+      <a href="#">DRM Policy</a>
+      <a href="#">Anti-Piracy</a>
+      <a href="#">Terms of Use</a>
+      <a href="#">Privacy</a>
+    </div>
+    <div class="footer-links">
+      <h4>Support</h4>
+      <a href="#">Help Center</a>
+      <a href="#">Contact</a>
+      <a href="#">Report Abuse</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2025 BIX TECH. All content is DRM-protected.</span>
+    <span class="secure-line">🛡 ZERO-LEAK PLATFORM</span>
+  </div>
+</footer>
+
+<!-- ===================== MODALS ===================== -->
+
+<!-- PAY MODAL -->
+<div class="modal-overlay" id="payModal" onclick="closeModalOutside(event,'payModal')">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('payModal')">✕</button>
+    <div class="modal-header">
+      <div class="shield-icon">🛡</div>
+      <h2>QUICK BUY</h2>
+      <p class="mono">Secure MoMo Transaction</p>
+    </div>
+    <div class="pay-details" id="payDetails">
+      <div class="pay-row">
+        <span>Content</span><span id="payItemName">Premium PDF Guide</span>
+      </div>
+      <div class="pay-row">
+        <span>Price</span><span class="gold-text" id="payItemPrice">250 XAF</span>
+      </div>
+      <div class="pay-row">
+        <span>Merchant</span><span class="mono">682613312</span>
+      </div>
+      <div class="pay-row">
+        <span>Security</span><span class="good-text">🛡 DRM Enabled</span>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Mobile Money Number</label>
+      <input type="tel" id="momoNumber" placeholder="6XX XXX XXX" maxlength="9" />
+    </div>
+    <button class="btn-gold full-width large" onclick="processPay()">⚡ Confirm Payment</button>
+    <p class="modal-note">You will receive a PIN confirmation from MTN/Orange MoMo.</p>
+  </div>
+</div>
+
+<!-- SUCCESS MODAL -->
+<div class="modal-overlay" id="successModal" onclick="closeModalOutside(event,'successModal')">
+  <div class="modal text-center">
+    <div class="success-anim">✅</div>
+    <h2>PAYMENT SUCCESSFUL</h2>
+    <p>Content unlocked and added to your <strong>Secure Vault</strong>.</p>
+    <div class="pay-details">
+      <div class="pay-row">
+        <span>Transaction ID</span><span class="mono" id="txnId">BIX-00000</span>
+      </div>
+      <div class="pay-row">
+        <span>DRM Status</span><span class="good-text">🛡 Active</span>
+      </div>
+    </div>
+    <button class="btn-gold full-width" onclick="closeModal('successModal')">Open My Vault →</button>
+  </div>
+</div>
+
+<!-- LOGIN MODAL -->
+<div class="modal-overlay" id="loginModal" onclick="closeModalOutside(event,'loginModal')">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('loginModal')">✕</button>
+    <div class="modal-header">
+      <h2>SIGN IN</h2>
+      <p class="mono">BIX TECH Secure Vault</p>
+    </div>
+    <div class="form-group">
+      <label>Email or Phone</label>
+      <input type="text" placeholder="you@email.com or 6XXXXXXXX" />
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" placeholder="••••••••" />
+    </div>
+    <button class="btn-gold full-width large">Sign In</button>
+    <p class="modal-note">Don't have an account? <a onclick="switchModal('loginModal','signupModal')">Create one free →</a></p>
+  </div>
+</div>
+
+<!-- SIGNUP MODAL -->
+<div class="modal-overlay" id="signupModal" onclick="closeModalOutside(event,'signupModal')">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('signupModal')">✕</button>
+    <div class="modal-header">
+      <h2>CREATE ACCOUNT</h2>
+      <p class="mono">Join the Secure Vault</p>
+    </div>
+    <div class="form-group">
+      <label>Full Name</label>
+      <input type="text" placeholder="Your Name" />
+    </div>
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" placeholder="you@email.com" />
+    </div>
+    <div class="form-group">
+      <label>Phone (MoMo)</label>
+      <input type="tel" placeholder="6XX XXX XXX" />
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" placeholder="••••••••" />
+    </div>
+    <button class="btn-gold full-width large" onclick="closeModal('signupModal')">Create Free Account</button>
+    <p class="modal-note">Already have an account? <a onclick="switchModal('signupModal','loginModal')">Sign in →</a></p>
+  </div>
+</div>
+
+<!-- ADMIN MODAL -->
+<div class="modal-overlay" id="adminModal" onclick="closeModalOutside(event,'adminModal')">
+  <div class="modal wide">
+    <button class="modal-close" onclick="closeModal('adminModal')">✕</button>
+    <div class="modal-header">
+      <h2>⚙️ ADMIN PANEL</h2>
+      <p class="mono">BIX TECH Content Manager</p>
+    </div>
+    <!-- Fraud Alert -->
+    <div class="admin-alert" id="adminAlert" style="display:none">
+      <span>🚨 FRAUD ALERT: User #<strong id="alertUser">4821</strong> has exceeded screenshot limit. <button class="btn-small-gold" onclick="freezeAccount()">Freeze Account</button></span>
+    </div>
+    <div class="admin-tabs">
+      <button class="admin-tab active" onclick="switchAdminTab('upload',this)">Upload File</button>
+      <button class="admin-tab" onclick="switchAdminTab('files',this)">Manage Files</button>
+      <button class="admin-tab" onclick="switchAdminTab('users',this)">Users</button>
+    </div>
+    <!-- Upload Tab -->
+    <div class="admin-panel-content" id="tab-upload">
+      <div class="upload-zone" id="uploadZone" ondragover="event.preventDefault()" ondrop="handleDrop(event)">
+        <div class="upload-icon">📁</div>
+        <p>Drag & drop file here or <label class="upload-link" for="fileInput">browse</label></p>
+        <input type="file" id="fileInput" accept="video/*,application/pdf,image/*,.docx,.doc" onchange="handleFileSelect(event)" style="display:none" />
+        <p class="mono small">MP4, PDF, JPG, PNG, DOCX supported</p>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Title</label>
+          <input type="text" id="uploadTitle" placeholder="Content title" />
+        </div>
+        <div class="form-group">
+          <label>Price (XAF)</label>
+          <select id="uploadPrice">
+            <option value="250">250 XAF</option>
+            <option value="500">500 XAF</option>
+            <option value="1000">1,000 XAF</option>
+            <option value="custom">Custom</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group" id="customPriceGroup" style="display:none">
+        <label>Custom Price (XAF)</label>
+        <input type="number" id="customPrice" placeholder="Enter amount" min="250" />
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea placeholder="Describe your content..." rows="3"></textarea>
+      </div>
+      <div class="toggle-row">
+        <span>Anti-Screenshot Protection</span>
+        <label class="toggle">
+          <input type="checkbox" checked id="antiScreenshot" />
+          <span class="toggle-slider"></span>
+        </label>
+        <span class="toggle-label" id="antiScreenshotLabel">ENABLED</span>
+      </div>
+      <button class="btn-gold full-width" onclick="uploadContent()">⚡ Upload & Protect</button>
+    </div>
+    <!-- Files Tab -->
+    <div class="admin-panel-content hidden" id="tab-files">
+      <div class="admin-files-list" id="adminFilesList"></div>
+    </div>
+    <!-- Users Tab -->
+    <div class="admin-panel-content hidden" id="tab-users">
+      <div class="users-table-wrap">
+        <table class="admin-table">
+          <thead><tr><th>User</th><th>Purchases</th><th>Attempts</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody id="usersTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN TRIGGER (hidden, bottom-right corner) -->
+<button class="admin-trigger" onclick="showModal('adminModal')" title="Admin Panel">⚙️</button>
+
+<!-- VIEWER MODAL -->
+<div class="modal-overlay" id="viewerModal" onclick="closeModalOutside(event,'viewerModal')">
+  <div class="modal wide viewer-modal">
+    <button class="modal-close" onclick="closeModal('viewerModal')">✕</button>
+    <div class="viewer-header">
+      <span id="viewerTitle">Document</span>
+      <span class="secure-badge small">🛡 DRM ACTIVE</span>
+    </div>
+    <div class="viewer-body" id="viewerBody">
+      <!-- content rendered here -->
+    </div>
+    <div class="viewer-watermark" id="viewerWatermark">USER#0000</div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
